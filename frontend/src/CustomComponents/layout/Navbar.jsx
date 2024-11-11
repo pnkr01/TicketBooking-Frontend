@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useState, useEffect } from "react";
 import { FaUser } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
@@ -9,24 +10,29 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import LoginDialog from "../auth/LoginDialog";
 import { Link } from "react-router-dom";
 import LocationSelector from "./LocationSelector";
 import Logo from "../../images/Logo.png";
+import LoginDialog from "../auth/LoginDialog";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const [isLoginDialogOpen, setLoginDialogOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const [searchQuery, setSearchQuery] = useState(""); // Track the search query
+  const [userCity, setUserCity] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
   // const [searchResults, setSearchResults] = useState([]); // Store search results
 
   // Load user data from localStorage on component mount
-  
+
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("userData"));
+    const userCity = JSON.parse(localStorage.getItem("selectedLocation"));
     if (userData) {
       setUser(userData);
+    }
+    if (userCity) {
+      setUserCity(userCity);
     }
   }, []);
 
@@ -39,11 +45,9 @@ export default function Navbar() {
     setUser(null);
   };
 
-  // eslint-disable-next-line no-unused-vars
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
-
 
   const handleSearchKeyDown = (e) => {
     if (e.key === "Enter" && searchQuery.trim() !== "") {
@@ -59,8 +63,9 @@ export default function Navbar() {
     <div className="flex items-center justify-between px-4 py-2 bg-neutral-50 shadow-sm">
       {/* Logo */}
       <div className="basis-2/3 flex justify-start items-center space-x-8">
-        <img src={Logo} className="h-10 w-30" />
-
+        <Link to="/">
+          <img src={Logo} className="h-10 w-30" />
+        </Link>
         {/* Search Bar */}
         <div className="flex-grow mx-4 max-w-md">
           <input
@@ -76,13 +81,18 @@ export default function Navbar() {
 
       {/* Location Selector and User Menu */}
       <div className="flex items-center space-x-4">
-        {/* Location Selector */}
-        <button className="font-medium bg-indigo-700 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg shadow-lg"
-          onClick={handleLocationSelectorOpen}>
-          Select Location
+        <button
+          className="font-medium bg-indigo-700 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg shadow-lg"
+          onClick={handleLocationSelectorOpen}
+        >
+          {userCity ? (
+            <span>
+              {userCity.icon} {userCity.city}
+            </span>
+          ) : (
+            "Select Location"
+          )}
         </button>
-
-        {/* Login / User Menu */}
         {user ? (
           <DropdownMenu className="outline-none">
             <DropdownMenuTrigger>
@@ -95,27 +105,39 @@ export default function Navbar() {
             <DropdownMenuContent className="m-2">
               <DropdownMenuLabel>{user.name}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer"><Link to="/register-as-owner">Become Place Owner</Link></DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer"><Link to="/bookings">Your Bookings</Link></DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">
+                <Link to="/register-as-owner">Become Place Owner</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">
+                <Link to="/bookings">Your Bookings</Link>
+              </DropdownMenuItem>
               {/* <DropdownMenuItem>Account & Settings</DropdownMenuItem> */}
-              <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>Sign Out</DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={handleLogout}
+              >
+                Sign Out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
           <Link to="/login">
-          <button
-            className="font-medium bg-indigo-700 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg shadow-lg"
-            onClick={handleLoginOpen}
-          >
-            Login
-          </button>
+            <button
+              className="font-medium bg-indigo-700 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg shadow-lg"
+              onClick={handleLoginOpen}
+            >
+              Login
+            </button>
           </Link>
         )}
       </div>
 
       {/* Login Dialog */}
-      <LoginDialog onLoginSuccess={handleLoginSuccess}/>
-      <LocationSelector open={isLocationSelectorOpen} onClose={handleLocationSelectorClose} />
+      <LoginDialog />
+      <LocationSelector
+        open={isLocationSelectorOpen}
+        onClose={handleLocationSelectorClose}
+      />
     </div>
   );
 }

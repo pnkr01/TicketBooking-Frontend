@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 import {
   Carousel,
   CarouselContent,
@@ -13,7 +14,16 @@ const OngoingEvent = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
+  const [userCity, setCity] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
+
+  // Fetch the userCity from localStorage only once on initial render
+  useEffect(() => {
+    const city = JSON.parse(localStorage.getItem("selectedLocation"));
+    if (city) {
+      setCity(city.city);
+    }
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   // Fetch the top sold events from the backend API with pagination
   useEffect(() => {
@@ -22,7 +32,9 @@ const OngoingEvent = () => {
       try {
         const token = localStorage.getItem("jwtToken");
         const response = await fetch(
-          `http://localhost:8080/api/events/upcoming?page=${page}&size=5`,
+          userCity == null
+            ? `http://localhost:8080/api/events/upcoming?&page=${page}&size=5`
+            : `http://localhost:8080/api/events/upcoming?city=${userCity}&page=${page}&size=5`, // Fixed the missing "&" between city and page
           {
             method: "GET",
             headers: {
@@ -35,6 +47,8 @@ const OngoingEvent = () => {
         if (!response.ok) throw new Error("Failed to fetch top sold events");
 
         const data = await response.json();
+        console.log(data);
+        
         setEvents(data.content);
         setTotalPages(data.totalPages);
       } catch (error) {
@@ -45,8 +59,9 @@ const OngoingEvent = () => {
       }
     };
 
+   
     fetchTopSoldEvents();
-  }, [page]); // Trigger fetch when the page changes
+  }, [page, userCity]); // Trigger fetch when the page or userCity changes
 
   const handleNextPage = () => {
     if (page < totalPages - 1) {
@@ -66,7 +81,7 @@ const OngoingEvent = () => {
   return (
     <div className="mt-8 p-4">
       <div className="flex flex-col gap-2">
-        <h3 className="font-bold text-xl">Upcoming Events</h3>
+        <h3 className="font-bold text-xl">Upcoming Events in {userCity}</h3>
         <Carousel opts={{ align: "start" }} className="w-full max-w-7xl">
           <CarouselPrevious onClick={handlePreviousPage} disabled={page === 0}>
             <span className="text-white">{"<"}</span>
@@ -79,17 +94,19 @@ const OngoingEvent = () => {
                   className="md:basis-1/3 lg:basis-1/4"
                 >
                   <div className="p-1">
-                    <Card>
-                      <CardContent className="flex flex-col items-center p-6">
-                        <span className="text-xl font-semibold">
-                          {event.placeName}
-                        </span>
-                        <span className="text-md mt-2">
-                          Remaing Ticket: {event.maxTicket-event.soldTicket}
-                        </span>
-                        <p className="text-sm mt-1">{event.description}</p>
-                      </CardContent>
-                    </Card>
+                    <Link to={`/place/${event.placeId}`} state={{ eventData: event }}>
+                      <Card>
+                        <CardContent className="flex flex-col items-center p-6">
+                          <span className="text-xl font-semibold">
+                            {event.placeName}
+                          </span>
+                          <span className="text-md mt-2">
+                            Remaing Ticket: {event.maxTicket - event.soldTicket}
+                          </span>
+                          <p className="text-sm mt-1">{event.description}</p>
+                        </CardContent>
+                      </Card>
+                    </Link>
                   </div>
                 </CarouselItem>
               ))
@@ -97,7 +114,10 @@ const OngoingEvent = () => {
               <div>No events available.</div>
             )}
           </CarouselContent>
-          <CarouselNext onClick={handleNextPage} disabled={page === totalPages - 1}>
+          <CarouselNext
+            onClick={handleNextPage}
+            disabled={page === totalPages - 1}
+          >
             <span className="text-white">{">"}</span>
           </CarouselNext>
         </Carousel>

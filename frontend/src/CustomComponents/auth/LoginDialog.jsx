@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Button } from "@/Components/ui/button";
 import { signin } from "../../services/authApi";
 import { useState } from "react";

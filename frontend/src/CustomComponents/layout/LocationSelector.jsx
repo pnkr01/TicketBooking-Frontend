@@ -23,7 +23,7 @@ const assignRandomIcon = () => {
 };
 
 // Component for selecting location
-const LocationSelector = ({ open, onClose, onSelectLocation }) => {
+const LocationSelector = ({ open, onClose }) => {
   const [showAllCities, setShowAllCities] = useState(false);
   const [locations, setLocations] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -63,6 +63,18 @@ const LocationSelector = ({ open, onClose, onSelectLocation }) => {
 
   const paginate = (pageNumber) => setPage(pageNumber);
 
+  // Handle location selection
+  const handleLocationSelect = (location) => {
+    // Save selected location to local storage
+    localStorage.setItem("selectedLocation", JSON.stringify(location));
+
+    // Close the dialog
+    onClose();
+
+    // Reload the homepage
+    window.location.reload();
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl overflow-auto max-h-[60vh] p-6 space-y-4 rounded-lg shadow-lg bg-white">
@@ -92,7 +104,7 @@ const LocationSelector = ({ open, onClose, onSelectLocation }) => {
               <div
                 key={city.id}
                 className="cursor-pointer"
-                onClick={() => onSelectLocation(city)}
+                onClick={() => handleLocationSelect(city)}
               >
                 <span className="text-lg">{city.icon}</span>
                 <span className="block text-xs text-gray-500">{city.city}</span>
@@ -109,7 +121,7 @@ const LocationSelector = ({ open, onClose, onSelectLocation }) => {
               <div
                 key={location.id}
                 className="cursor-pointer"
-                onClick={() => onSelectLocation(location)}
+                onClick={() => handleLocationSelect(location)}
               >
                 <span className="text-lg">{location.icon}</span>
                 <span className="block text-xs text-gray-500">{location.city}</span>

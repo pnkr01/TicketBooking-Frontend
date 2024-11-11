@@ -23,7 +23,7 @@ import PaymentScreen from "./Screens/PaymentScreen";
 import OwnerRoute from "./CustomComponents/protectedRoutes/OwnerRoute";
 import LoginDialog from "./CustomComponents/auth/LoginDialog";
 import SearchResultsScreen from './CustomComponents/home/SearchResultsScreen';
-import PlaceDetailScreen from './CustomComponents/home/DetailedEventView';
+// import PlaceDetailScreen from "./CustomComponents/home/PlaceDetailScreen";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -33,6 +33,7 @@ const router = createBrowserRouter(
       </Route>
       <Route path="/place/:placeId" element={<SinglePlaceScreen />} />
       <Route path="/book" element={<BookScreen />} />
+      {/* <Route path="/place/:placeId" element={<PlaceDetailScreen />} /> */}
       <Route path="/book/payment" element={<PaymentScreen />} />
       <Route path="/bookings" element={<UserBookingScreen />} />
       <Route path="/register-as-owner" element={<OwnerRegisterScreen />} />
