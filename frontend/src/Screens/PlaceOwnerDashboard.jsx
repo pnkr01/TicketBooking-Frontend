@@ -1,12 +1,12 @@
 // eslint-disable-next-line no-unused-vars
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa6";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
 } from "@/Components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay"
+import Autoplay from "embla-carousel-autoplay";
 import AddPlaceDialog from "@/CustomComponents/ownerDashboard/AddPlaceDialog";
 
 const PlaceCard = () => {
@@ -57,7 +57,7 @@ const PlaceCard = () => {
       </div>
 
       {/* Price */}
-      <div className="text-lg font-semibold text-gray-800">$500</div>
+      <div className="text-lg font-semibold text-gray-800">Rs 500</div>
     </div>
   );
 };
@@ -67,6 +67,34 @@ const PlaceOwnerDashboard = () => {
 
   const handleAddPlaceOpen = () => setAddPlaceDialogOpen(true);
   const handleAddPlaceClose = () => setAddPlaceDialogOpen(false);
+
+  useEffect(() => {
+    fetchPlaces();
+  }, []);
+
+  const fetchPlaces = async () => {
+    try {
+      const userId = userData.userId;
+      if (!userId) {
+        console.error("User ID not found in local storage.");
+        return;
+      }
+
+      const token = localStorage.getItem("jwtToken");
+      const response = await axios.get(
+        `http://localhost:8080/api/ticketBookings/get-user-ticket-bookings/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setBookings(response.data);
+    } catch (error) {
+      console.error("Error fetching bookings", error);
+    }
+  };
   return (
     <>
       <div className="max-w-7xl mx-auto flex justify-center items-center my-8 bg-gray-100">

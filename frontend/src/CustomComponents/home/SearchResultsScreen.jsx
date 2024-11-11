@@ -27,7 +27,7 @@ export default function SearchResultsScreen() {
           <Link
           key={place.placeId}
           to={`/place/${place.placeId}`}
-                state={{ place }}
+          state={{ eventData: place }}
           className="border border-gray-300 rounded-lg p-4 shadow hover:shadow-md transition-shadow"
         >
             <h3 className="text-xl font-semibold text-gray-800 mb-2">{place.placeName}</h3>
@@ -41,6 +41,4 @@ export default function SearchResultsScreen() {
       </div>
     </div>
   );
-  
-  
 }

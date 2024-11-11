@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 import {
   Carousel,
   CarouselContent,
@@ -14,15 +15,25 @@ const OngoingEvent = () => {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [userCity, setCity] = useState(null); // State to store city value
 
-  // Fetch the top sold events from the backend API with pagination
   useEffect(() => {
+    // Setting userCity only when the component mounts and city is found in localStorage
+    const city = JSON.parse(localStorage.getItem("selectedLocation"));
+    if (city) {
+      setCity(city.city); // Update the city only once
+    }
+  }, []); // Empty dependency array ensures this only runs once
+
+  useEffect(() => {
+    // if (!userCity) return; // Skip API call if userCity is not set
+
     const fetchTopSoldEvents = async () => {
       setLoading(true);
       try {
         const token = localStorage.getItem("jwtToken");
         const response = await fetch(
-          `http://localhost:8080/api/events/ongoing?page=${page}&size=5`,
+         userCity==null?`http://localhost:8080/api/events/ongoing?&page=${page}&size=5`: `http://localhost:8080/api/events/ongoing?city=${userCity}&page=${page}&size=5`, // Fixed the query string format
           {
             method: "GET",
             headers: {
@@ -32,7 +43,7 @@ const OngoingEvent = () => {
           }
         );
 
-        if (!response.ok) throw new Error("Failed to fetch top sold events");
+        if (!response.ok) throw new Error("Failed to fetch ongoing events");
 
         const data = await response.json();
         setEvents(data.content);
@@ -46,7 +57,7 @@ const OngoingEvent = () => {
     };
 
     fetchTopSoldEvents();
-  }, [page]); // Trigger fetch when the page changes
+  }, [page, userCity]); // Trigger fetch when the page or userCity changes
 
   const handleNextPage = () => {
     if (page < totalPages - 1) {
@@ -60,7 +71,7 @@ const OngoingEvent = () => {
     }
   };
 
-  if (loading) return <div>Loading popular events...</div>;
+  if (loading) return <div>Loading ongoing events...</div>;
   if (error) return <div className="text-red-500">{error}</div>;
 
   return (
@@ -79,17 +90,19 @@ const OngoingEvent = () => {
                   className="md:basis-1/3 lg:basis-1/4"
                 >
                   <div className="p-1">
+                  <Link to={`/place/${event.placeId}`}state={{ eventData: event }}>
                     <Card>
                       <CardContent className="flex flex-col items-center p-6">
                         <span className="text-xl font-semibold">
                           {event.placeName}
                         </span>
                         <span className="text-md mt-2">
-                          Remaing Ticket: {event.maxTicket-event.soldTicket}
+                          Remaining Tickets: {event.maxTicket - event.soldTicket}
                         </span>
                         <p className="text-sm mt-1">{event.description}</p>
                       </CardContent>
-                    </Card>
+                      </Card>
+                      </Link>
                   </div>
                 </CarouselItem>
               ))
